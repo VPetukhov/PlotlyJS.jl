@@ -185,3 +185,29 @@ for func in [:png_data, :jpeg_data, :wepb_data, :svg_data,
         error(msg)
     end
 end
+
+function savefig_imageexporter(p::Plot, fn::AbstractString)
+    cmd = "/Users/sglyon/src/other/image-exporter/bin/plotly-graph-exporter.js"
+    format = split(fn, ".")[end]
+    run(`$cmd $(JSON.json(p)) --format $format --output $fn`)
+end
+
+savefig_imageexporter(p::SyncPlot, args...; kwargs...) = savefig_imageexporter(p.plot, args...; kwargs...)
+
+using Requests
+function savefig_imageserver(p::Plot, host, port, fn::AbstractString; kwargs...)
+    format = split(fn, ".")[end]
+    body = Dict("figure" => JSON.lower(p), "format" => format)
+    kw = Dict(kwargs)
+    for k in ["scale", "width", "height", "encoded"]
+        if haskey(kw, Symbol(k))
+            body[k] = kw[Symbol(k)]
+        end
+    end
+    foo = Requests.post("http://$host:$port/", json=body)
+    open(fn, "w") do f
+        write(f, foo.data)
+    end
+end
+
+savefig_imageserver(p::SyncPlot, args...; kwargs...) = savefig_imageserver(p.plot, args...; kwargs...)

@@ -13,7 +13,9 @@ ElectronDisplay(divid::Base.Random.UUID) = ElectronDisplay(divid, Nullable())
 ElectronDisplay(p::Plot) = ElectronDisplay(p.divid)
 ElectronPlot(p::Plot) = ElectronPlot(p, ElectronDisplay(p.divid))
 
-PlotlyBase.fork(jp::ElectronPlot) = ElectronPlot(fork(jp.plot), ElectronDisplay())
+function PlotlyBase.fork(jp::ElectronPlot)
+    ElectronPlot(fork(jp.plot), ElectronDisplay(jp.view.divid))
+end
 
 # define some core methods on the display
 
